@@ -37,12 +37,10 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // debugShowMaterialGrid: true,
       theme: ThemeData(
           brightness: Brightness.light,
           primarySwatch: Colors.deepOrange,
           accentColor: Colors.deepPurple),
-      //home: AuthPage(),
       routes: {
         '/': (BuildContext context) =>
             ProductsPage(_products, _addProduct, _deleteProduct),
@@ -60,6 +58,11 @@ class _MyAppState extends State<MyApp> {
                   _products[index]['title'], _products[index]['image']));
         }
         return null;
+      },
+      onUnknownRoute: (RouteSettings settings) {
+        return MaterialPageRoute(
+            builder: (BuildContext context) =>
+                ProductsPage(_products, _addProduct, _deleteProduct));
       },
     );
   }
