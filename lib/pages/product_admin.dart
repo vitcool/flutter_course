@@ -19,6 +19,7 @@ class ProductAdminPage extends StatelessWidget {
               children: <Widget>[
                 AppBar(automaticallyImplyLeading: false, title: Text('Choose')),
                 ListTile(
+                  leading: Icon(Icons.shop),
                   title: Text('Products List'),
                   onTap: () {
                     Navigator.pushReplacementNamed(context, '/products');
@@ -37,7 +38,10 @@ class ProductAdminPage extends StatelessWidget {
             ),
           ),
           body: TabBarView(
-            children: <Widget>[ProductCreatePage(addProduct), ProductListPage()],
+            children: <Widget>[
+              ProductCreatePage(addProduct),
+              ProductListPage()
+            ],
           )),
     );
   }

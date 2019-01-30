@@ -19,11 +19,22 @@ class _AuthPageState extends State<AuthPage> {
           title: Text('Log in'),
         ),
         body: Container(
-            margin: EdgeInsets.all(10.0),
-            child: ListView(
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('assets/background.jpg'),
+                    fit: BoxFit.cover,
+                    colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.4), BlendMode.dstATop))),
+            padding: EdgeInsets.all(10.0),
+            child: Center(
+                child: SingleChildScrollView(
+                    child: Column(
               children: <Widget>[
                 TextField(
-                  decoration: InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(
+                      labelText: 'Email',
+                      filled: true,
+                      fillColor: Colors.white),
                   keyboardType: TextInputType.emailAddress,
                   onChanged: (String value) {
                     setState(() {
@@ -31,9 +42,15 @@ class _AuthPageState extends State<AuthPage> {
                     });
                   },
                 ),
+                SizedBox(
+                  height: 10.0,
+                ),
                 TextField(
                   obscureText: true,
-                  decoration: InputDecoration(labelText: 'Password'),
+                  decoration: InputDecoration(
+                      labelText: 'Password',
+                      filled: true,
+                      fillColor: Colors.white),
                   onChanged: (String value) {
                     setState(() {
                       _passwordValue = value;
@@ -61,6 +78,6 @@ class _AuthPageState extends State<AuthPage> {
                   },
                 )
               ],
-            )));
+            )))));
   }
 }
