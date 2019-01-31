@@ -62,17 +62,22 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    final double deviceWidth = MediaQuery.of(context).size.width;
+    final double targetWidth = deviceWidth > 768.0 ? 500 : deviceWidth * 0.5;
+
     return Scaffold(
         appBar: AppBar(
           title: Text('Log in'),
         ),
         body: Container(
+            alignment: Alignment.center,
             decoration: BoxDecoration(image: _buildBackgroundImage()),
             padding: EdgeInsets.all(10.0),
             child: Center(
                 child: SingleChildScrollView(
-                    child: Column(
-              children: <Widget>[
+                    child: Container(
+              width: targetWidth,
+              child: Column(children: <Widget>[
                 _buildEmailTextField(),
                 SizedBox(
                   height: 10.0,
@@ -84,11 +89,10 @@ class _AuthPageState extends State<AuthPage> {
                 ),
                 RaisedButton(
                   child: Text('Login'),
-                  color: Theme.of(context).primaryColor,
                   textColor: Colors.white,
                   onPressed: _submitForm,
                 )
-              ],
+              ]),
             )))));
   }
 }
