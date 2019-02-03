@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
-class ProductCreatePage extends StatefulWidget {
+class ProductEditPage extends StatefulWidget {
   final Function addProduct;
+  final Function updateProduct;
+  final Map<String, dynamic> product;
+  final int productIndex;
 
-  ProductCreatePage(this.addProduct);
+  ProductEditPage(
+      {this.addProduct, this.updateProduct, this.product, this.productIndex});
 
   @override
   State<StatefulWidget> createState() {
-    return _ProductCreatePageState();
+    return _ProductEditPageState();
   }
 }
 
-class _ProductCreatePageState extends State<ProductCreatePage> {
+class _ProductEditPageState extends State<ProductEditPage> {
   final Map<String, dynamic> _formData = {
     'title': '',
     'description': '',
@@ -22,6 +26,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   Widget _buildTitleTextField() {
     return TextFormField(
         decoration: InputDecoration(labelText: 'Product title'),
+        initialValue: !(widget.product == null) ? widget.product['title'] : '',
         validator: (String value) {
           if (value.isEmpty || value.length < 5) {
             return ('Title is required and should be 5+ chars long.');
@@ -35,6 +40,8 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   Widget _buildProductDescription() {
     return TextFormField(
       decoration: InputDecoration(labelText: 'Product description'),
+      initialValue:
+          !(widget.product == null) ? widget.product['description'] : '',
       validator: (String value) {
         if (value.isEmpty || value.length < 10) {
           return ('Description is required and should be 10+ chars long.');
@@ -50,14 +57,16 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   Widget _buildPriceTextField() {
     return TextFormField(
       decoration: InputDecoration(labelText: 'Product price'),
+      initialValue:
+          !(widget.product == null) ? widget.product['price'].toString() : '',
       validator: (String value) {
         if (value.isEmpty ||
-            !RegExp(r'^(?:[1-9]\d*|0)?(?:\[.,]\d+)?$').hasMatch(value)) {
+            !RegExp(r'^(?:[1-9]\d*|0)?(?:\.\d+)?$').hasMatch(value)) {
           return ('Price is required and should be a number.');
         }
       },
       onSaved: (String value) {
-        _formData['value'] =
+        _formData['price'] =
             double.parse(value.replaceFirst(RegExp(r','), '.'));
       },
       keyboardType: TextInputType.number,
@@ -70,7 +79,11 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
     }
     _formKey.currentState.save();
     final Map<String, dynamic> product = _formData;
-    widget.addProduct(product);
+    if (widget.product == null) {
+      widget.addProduct(product);
+    } else {
+      widget.updateProduct(widget.productIndex, _formData);
+    }
     Navigator.pushReplacementNamed(context, '/products');
   }
 
@@ -79,7 +92,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 550.0 ? 500 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
-    return GestureDetector(
+    final Widget pageContent = GestureDetector(
         onTap: () {
           FocusScope.of(context).requestFocus(FocusNode());
         },
@@ -105,5 +118,9 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                     )
                   ],
                 ))));
+    return widget.product == null
+        ? pageContent
+        : Scaffold(
+            appBar: AppBar(title: Text('Edit Product')), body: pageContent);
   }
 }
