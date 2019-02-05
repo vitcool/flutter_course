@@ -48,7 +48,7 @@ class ProductAdminPage extends StatelessWidget {
             children: <Widget>[
               ProductEditPage(
                   addProduct: addProduct),
-              ProductListPage(products, updateProduct)
+              ProductListPage(products, updateProduct, removeProduct)
             ],
           )),
     );
