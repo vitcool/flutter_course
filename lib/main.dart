@@ -20,25 +20,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Product> _products = [];
 
-  void _addProduct(Product product) {
-    setState(() {
-      _products.add(product);
-    });
-  }
-
-  void _updateProduct(int index, Product product) {
-    setState(() {
-      _products[index] = product;
-    });
-  }
-
-  void _deleteProduct(int index) {
-    setState(() {
-      _products.removeAt(index);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +32,8 @@ class _MyAppState extends State<MyApp> {
           buttonColor: Colors.deepPurple),
       routes: {
         '/': (BuildContext context) => AuthPage(),
-        '/products': (BuildContext context) => ProductsPage(_products),
-        '/admin': (BuildContext context) => ProductAdminPage(
-            _addProduct, _updateProduct, _deleteProduct, _products)
+        '/products': (BuildContext context) => ProductsPage(),
+        '/admin': (BuildContext context) => ProductAdminPage()
       },
       onGenerateRoute: (RouteSettings settings) {
         final List<String> pathElement = settings.name.split('/');
@@ -62,17 +43,13 @@ class _MyAppState extends State<MyApp> {
         if (pathElement[1] == 'product') {
           final int index = int.parse(pathElement[2]);
           return MaterialPageRoute<bool>(
-              builder: (BuildContext context) => ProductPage(
-                  _products[index].title,
-                  _products[index].image,
-                  _products[index].price,
-                  _products[index].description));
+              builder: (BuildContext context) => ProductPage(null, null, null,null));
         }
         return null;
       },
       onUnknownRoute: (RouteSettings settings) {
         return MaterialPageRoute(
-            builder: (BuildContext context) => ProductsPage(_products));
+            builder: (BuildContext context) => ProductsPage());
       },
     );
   }
