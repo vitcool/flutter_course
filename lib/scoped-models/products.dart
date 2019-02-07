@@ -11,7 +11,9 @@ class ProductsModel extends Model {
   }
 
   Product get selectedProduct {
-    return _selectedProductIndex != null ? _products[_selectedProductIndex] : null;
+    return _selectedProductIndex != null
+        ? _products[_selectedProductIndex]
+        : null;
   }
 
   int get selectedProductIndex {
@@ -35,5 +37,19 @@ class ProductsModel extends Model {
 
   void selectProduct(int index) {
     _selectedProductIndex = index;
+  }
+
+  void toggleProductFavoriteStatus() {
+    final bool isCurrentlyFavorite =
+        _products[_selectedProductIndex].isFavorite;
+    final bool newFaoviriteState = !isCurrentlyFavorite;
+    final Product updatedProduct = Product(
+        title: selectedProduct.title,
+        description: selectedProduct.description,
+        image: selectedProduct.image,
+        price: selectedProduct.price,
+        isFavorite: newFaoviriteState);
+    _products[_selectedProductIndex] = updatedProduct;
+    _selectedProductIndex = null;
   }
 }
