@@ -9,29 +9,38 @@ mixin ConnectedProductsModel on Model {
   int _selProductIndex;
   List<Product> _products = [];
   User _authenticatedUser;
+  bool _isLoading = true;
 
-  void addProduct(
+  Future<Null> addProduct(
       String title, String description, String image, double price) {
+    _isLoading = true;
+          notifyListeners();
     final Map<String, dynamic> productData = {
       'title': title,
       'description': description,
       'image':
           'https://www.friars.co.uk/images/lindt-gold-milk-chocolate-bar-p504-7263_image.jpg',
-      'price': price //,
-      // 'userEmail': _authenticatedUser.email,
-      // 'userId': _authenticatedUser.id
+      'price': price,
+      'userEmail': _authenticatedUser.email,
+      'userId': _authenticatedUser.id
     };
-    http.post('https://flutter-products-vitcool.firebaseio.com/products.json',
-        body: json.encode(productData));
-    final Product newProduct = Product(
-        title: title,
-        description: description,
-        image: image,
-        price: price,
-        userEmail: _authenticatedUser.email,
-        userId: _authenticatedUser.id);
-    _products.add(newProduct);
-    notifyListeners();
+    return http
+        .post('https://flutter-products-vitcool.firebaseio.com/products.json',
+            body: json.encode(productData))
+        .then((http.Response response) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      final Product newProduct = Product(
+          id: responseData['name'],
+          title: title,
+          description: description,
+          image: image,
+          price: price,
+          userEmail: _authenticatedUser.email,
+          userId: _authenticatedUser.id);
+      _products.add(newProduct);
+      _isLoading = false;
+      notifyListeners();
+    });
   }
 }
 
@@ -80,6 +89,33 @@ mixin ProductsModel on ConnectedProductsModel {
     _products.removeAt(selectedProductIndex);
   }
 
+  void fetchProducts() {
+    _isLoading = true;
+          notifyListeners();
+    http
+        .get('https://flutter-products-vitcool.firebaseio.com/products.json')
+        .then((http.Response response) {
+      final List<Product> fetchedProductList = [];
+      final Map<String, dynamic> productListData = json.decode(response.body);
+      if (productListData != null) {
+        productListData.forEach((String productId, dynamic productData) {
+          final Product product = Product(
+              id: productId,
+              title: productData['title'],
+              description: productData['description'],
+              image: productData['image'],
+              price: productData['price'],
+              userEmail: productData['userEmail'],
+              userId: productData['userId']);
+          fetchedProductList.add(product);
+        });
+        _products = fetchedProductList;
+      }
+      _isLoading = false;
+      notifyListeners();
+    });
+  }
+
   void selectProduct(int productId) {
     _selProductIndex = productId;
     if (productId != null) {
@@ -111,5 +147,11 @@ mixin ProductsModel on ConnectedProductsModel {
 mixin UserModel on ConnectedProductsModel {
   void login(String email, String password) {
     _authenticatedUser = User(id: '123123', email: email, password: password);
+  }
+}
+
+mixin UtilityModel on ConnectedProductsModel {
+  bool get isLoading {
+    return _isLoading;
   }
 }
