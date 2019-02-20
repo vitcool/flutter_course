@@ -7,6 +7,7 @@ import './pages/products.dart';
 import './pages/products_admin.dart';
 import './pages/auth.dart';
 import './scoped-models/main.dart';
+import './models/product.dart';
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -43,9 +44,14 @@ class _MyAppState extends State<MyApp> {
               return null;
             }
             if (pathElement[1] == 'product') {
-              final int index = int.parse(pathElement[2]);
+              final String productId = pathElement[2];
+              final Product product =
+                  model.allProducts.firstWhere((Product product) {
+                return product.id == productId;
+              });
+              model.selectProduct(productId);
               return MaterialPageRoute<bool>(
-                  builder: (BuildContext context) => ProductPage(index));
+                  builder: (BuildContext context) => ProductPage(product));
             }
             return null;
           },

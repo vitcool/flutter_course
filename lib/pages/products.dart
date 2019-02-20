@@ -56,7 +56,10 @@ class _ProductsPageState extends State<ProductsPage> {
           content = Center(child: CircularProgressIndicator());
         }
       }
-      return content;
+      return RefreshIndicator(
+        onRefresh: model.fetchProducts,
+        child: content,
+      );
     });
   }
 

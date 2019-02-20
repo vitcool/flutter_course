@@ -6,7 +6,7 @@ import '../models/product.dart';
 import '../models/user.dart';
 
 mixin ConnectedProductsModel on Model {
-  int _selProductIndex;
+  String _selProductId;
   List<Product> _products = [];
   User _authenticatedUser;
   bool _isLoading = true;
@@ -59,13 +59,22 @@ mixin ProductsModel on ConnectedProductsModel {
   }
 
   Product get selectedProduct {
-    return selectedProductIndex != null
-        ? _products[selectedProductIndex]
-        : null;
+    if (selectedProductId == null) {
+      return null;
+    }
+    return _products.firstWhere((Product product) {
+      return product.id == selectedProductId;
+    });
   }
 
   int get selectedProductIndex {
-    return _selProductIndex;
+    return _products.indexWhere((Product product) {
+      return product.id == _selProductId;
+    });
+  }
+
+  String get selectedProductId {
+    return _selProductId;
   }
 
   bool get showFavorites {
@@ -80,7 +89,8 @@ mixin ProductsModel on ConnectedProductsModel {
       'id': selectedProduct.id,
       'title': title,
       'description': description,
-      'image': 'https://www.friars.co.uk/images/lindt-gold-milk-chocolate-bar-p504-7263_image.jpg',
+      'image':
+          'https://www.friars.co.uk/images/lindt-gold-milk-chocolate-bar-p504-7263_image.jpg',
       'price': price,
       'userEmail': selectedProduct.userEmail,
       'userId': selectedProduct.userId
@@ -105,13 +115,25 @@ mixin ProductsModel on ConnectedProductsModel {
   }
 
   void deleteProduct() {
-    _products.removeAt(selectedProductIndex);
-  }
-
-  void fetchProducts() {
     _isLoading = true;
+    final deletedProductId = selectedProduct.id;
+    _products.removeAt(selectedProductIndex);
+    _selProductId = null;
     notifyListeners();
     http
+        .delete(
+            'https://flutter-products-vitcool.firebaseio.com/products/${deletedProductId}.json')
+        .then((_) {
+      _isLoading = false;
+
+      notifyListeners();
+    });
+  }
+
+  Future<Null> fetchProducts() {
+    _isLoading = true;
+    notifyListeners();
+    return http
         .get('https://flutter-products-vitcool.firebaseio.com/products.json')
         .then((http.Response response) {
       final List<Product> fetchedProductList = [];
@@ -135,8 +157,8 @@ mixin ProductsModel on ConnectedProductsModel {
     });
   }
 
-  void selectProduct(int productId) {
-    _selProductIndex = productId;
+  void selectProduct(String productId) {
+    _selProductId = productId;
     if (productId != null) {
       notifyListeners();
     }
@@ -146,6 +168,7 @@ mixin ProductsModel on ConnectedProductsModel {
     final bool isCurrentlyFavorite = _products[selectedProductIndex].isFavorite;
     final bool newFavoriteState = !isCurrentlyFavorite;
     final Product updatedProduct = Product(
+        id: selectedProduct.id,
         title: selectedProduct.title,
         description: selectedProduct.description,
         image: selectedProduct.image,
@@ -153,7 +176,7 @@ mixin ProductsModel on ConnectedProductsModel {
         isFavorite: newFavoriteState,
         userEmail: selectedProduct.userEmail,
         userId: selectedProduct.userId);
-    _products[_selProductIndex] = updatedProduct;
+    _products[selectedProductIndex] = updatedProduct;
     notifyListeners();
   }
 
