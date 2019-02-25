@@ -10,38 +10,6 @@ mixin ConnectedProductsModel on Model {
   List<Product> _products = [];
   User _authenticatedUser;
   bool _isLoading = true;
-
-  Future<Null> addProduct(
-      String title, String description, String image, double price) {
-    _isLoading = true;
-    notifyListeners();
-    final Map<String, dynamic> productData = {
-      'title': title,
-      'description': description,
-      'image':
-          'https://www.friars.co.uk/images/lindt-gold-milk-chocolate-bar-p504-7263_image.jpg',
-      'price': price,
-      'userEmail': _authenticatedUser.email,
-      'userId': _authenticatedUser.id
-    };
-    return http
-        .post('https://flutter-products-vitcool.firebaseio.com/products.json',
-            body: json.encode(productData))
-        .then((http.Response response) {
-      final Map<String, dynamic> responseData = json.decode(response.body);
-      final Product newProduct = Product(
-          id: responseData['name'],
-          title: title,
-          description: description,
-          image: image,
-          price: price,
-          userEmail: _authenticatedUser.email,
-          userId: _authenticatedUser.id);
-      _products.add(newProduct);
-      _isLoading = false;
-      notifyListeners();
-    });
-  }
 }
 
 mixin ProductsModel on ConnectedProductsModel {
@@ -81,7 +49,7 @@ mixin ProductsModel on ConnectedProductsModel {
     return _showFavorites;
   }
 
-  Future<Null> updateProduct(
+  Future<bool> updateProduct(
       String title, String description, String image, double price) {
     _isLoading = true;
     notifyListeners();
@@ -111,22 +79,31 @@ mixin ProductsModel on ConnectedProductsModel {
           userId: selectedProduct.userId);
       _products[selectedProductIndex] = updatedProduct;
       notifyListeners();
+      return true;
+    }).catchError((error) {
+      _isLoading = false;
+      notifyListeners();
+      return false;
     });
   }
 
-  void deleteProduct() {
+  Future<bool> deleteProduct() {
     _isLoading = true;
     final deletedProductId = selectedProduct.id;
     _products.removeAt(selectedProductIndex);
     _selProductId = null;
     notifyListeners();
-    http
+    return http
         .delete(
             'https://flutter-products-vitcool.firebaseio.com/products/${deletedProductId}.json')
         .then((_) {
       _isLoading = false;
-
       notifyListeners();
+      return true;
+    }).catchError((error) {
+      _isLoading = false;
+      notifyListeners();
+      return false;
     });
   }
 
@@ -135,7 +112,7 @@ mixin ProductsModel on ConnectedProductsModel {
     notifyListeners();
     return http
         .get('https://flutter-products-vitcool.firebaseio.com/products.json')
-        .then((http.Response response) {
+        .then<Null>((http.Response response) {
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
       if (productListData != null) {
@@ -154,6 +131,11 @@ mixin ProductsModel on ConnectedProductsModel {
       }
       _isLoading = false;
       notifyListeners();
+      _selProductId = null;
+    }).catchError((error) {
+      _isLoading = false;
+      notifyListeners();
+      return;
     });
   }
 
@@ -183,6 +165,48 @@ mixin ProductsModel on ConnectedProductsModel {
   void toggleDisplayMode() {
     _showFavorites = !_showFavorites;
     notifyListeners();
+  }
+
+  Future<bool> addProduct(
+      String title, String description, String image, double price) async {
+    _isLoading = true;
+    notifyListeners();
+    final Map<String, dynamic> productData = {
+      'title': title,
+      'description': description,
+      'image':
+          'https://www.friars.co.uk/images/lindt-gold-milk-chocolate-bar-p504-7263_image.jpg',
+      'price': price,
+      'userEmail': _authenticatedUser.email,
+      'userId': _authenticatedUser.id
+    };
+    try {
+      final http.Response response = await http.post(
+          'https://flutter-products-vitcool.firebaseio.com/products.json',
+          body: json.encode(productData));
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      final Product newProduct = Product(
+          id: responseData['name'],
+          title: title,
+          description: description,
+          image: image,
+          price: price,
+          userEmail: _authenticatedUser.email,
+          userId: _authenticatedUser.id);
+      _products.add(newProduct);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 }
 
